@@ -1,0 +1,28 @@
+name: Update Forks
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-forks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Create pull requests in forks
+        run: |
+          # Lista de repositorios de estudiantes (forks)
+          student_repos=(
+            danthb/intro-computer-vision
+          )
+
+          # Mensaje del PR
+          PR_TITLE="Actualizar con los últimos cambios del template"
+          PR_BODY="Se han realizado las siguientes actualizaciones:\n- Corrección de errores\n- Nuevas instrucciones para la tarea"
+
+          for repo in "${student_repos[@]}"; do
+            gh pr create --repo "$repo" --head "tu-organizacion:main" --base "main" \
+              --title "$PR_TITLE" --body "$PR_BODY"
+          done
