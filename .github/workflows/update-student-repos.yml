@@ -1,7 +1,7 @@
 name: Update Forks
 
 on:
-  workflow_dispatch:  # Permite ejecutar manualmente el workflow
+  workflow_dispatch: 
 
 jobs:
   update-forks:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Set up GitHub CLI authentication
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           echo "Autenticación configurada para GitHub CLI"
 
