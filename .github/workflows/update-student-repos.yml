@@ -9,29 +9,41 @@ jobs:
     environment: test
 
     steps:
+      # 1. Autenticación en GitHub CLI
       - name: Set up GitHub CLI authentication
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }} 
         run: |
           gh auth status  # Verifica que la autenticación funciona
 
+      # 2. Verificar si hay cambios en el repositorio base
+      - name: Check for changes in the base repository
+        id: check_changes
+        run: |
+          # Verifica si hay commits nuevos en el repositorio base
+          BASE_REPO="tu-organizacion/template-repo"
+          BASE_BRANCH="main"
+          gh api repos/$BASE_REPO/commits --jq '.[].sha' > commits.txt
+
+          # Obtén el último commit del repositorio base
+          LAST_COMMIT=$(head -n 1 commits.txt)
+          echo "Último commit en $BASE_REPO: $LAST_COMMIT"
+
+      # 3. Crear Pull Requests en forks de estudiantes
       - name: Create pull requests in forks
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          # Lista de repositorios de estudiantes (forks)
           repos=(
             ComputerVision-MOOC001/intro-computer-vision-danthb
           )
+
           PR_TITLE="Actualizar con los últimos cambios del template"
           PR_BODY="Se han realizado las siguientes actualizaciones:\n- Corrección de errores\n- Nuevas instrucciones para la tarea"
+
           for repo in "${repos[@]}"; do
-            echo "Creando Pull Request para $repo"
-            # Verifica si hay cambios antes de crear el Pull Request
-            if gh pr diff --repo "$repo" --head "ComputerVision-MOOC001:main" --base "main" > /dev/null 2>&1; then
-              gh pr create --repo "$repo" --head "ComputerVision-MOOC001:main" --base "main" \
-                --title "$PR_TITLE" --body "$PR_BODY"
-              echo "Pull Request creado para $repo"
-            else
-              echo "No hay cambios en $repo, no se creó el Pull Request."
-            fi
+            echo "Creando Pull Request para $repo desde $BASE_REPO:$BASE_BRANCH"
+            gh pr create --repo "$repo" --head "tu-organizacion:main" --base "main" \
+              --title "$PR_TITLE" --body "$PR_BODY" || echo "Error creando PR para $repo"
           done
