@@ -12,21 +12,22 @@ jobs:
       # 1. Autenticación en GitHub CLI
       - name: Set up GitHub CLI authentication
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }} 
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          gh auth login --with-token
           gh auth status  # Verifica que la autenticación funciona
 
-      # 2. Verificar si hay cambios en el repositorio base
+      # 2. Verificar si hay commits nuevos en el repositorio base
       - name: Check for changes in the base repository
-        id: check_changes
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          # Verifica si hay commits nuevos en el repositorio base
           BASE_REPO="tu-organizacion/template-repo"
           BASE_BRANCH="main"
-          gh api repos/$BASE_REPO/commits --jq '.[].sha' > commits.txt
 
-          # Obtén el último commit del repositorio base
-          LAST_COMMIT=$(head -n 1 commits.txt)
+          # Obtener el último commit del repositorio base
+          gh api repos/$BASE_REPO/commits --jq '.[0].sha' > last_commit.txt
+          LAST_COMMIT=$(cat last_commit.txt)
           echo "Último commit en $BASE_REPO: $LAST_COMMIT"
 
       # 3. Crear Pull Requests en forks de estudiantes
@@ -34,7 +35,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          # Lista de repositorios de estudiantes (forks)
           repos=(
             ComputerVision-MOOC001/intro-computer-vision-danthb
           )
@@ -44,6 +44,6 @@ jobs:
 
           for repo in "${repos[@]}"; do
             echo "Creando Pull Request para $repo desde $BASE_REPO:$BASE_BRANCH"
-            gh pr create --repo "$repo" --head "tu-organizacion:main" --base "main" \
+            gh pr create --repo "$repo" --head "$BASE_REPO:$BASE_BRANCH" --base "main" \
               --title "$PR_TITLE" --body "$PR_BODY" || echo "Error creando PR para $repo"
           done
