@@ -21,7 +21,7 @@ jobs:
         run: |
           # Lista de repositorios de estudiantes (forks)
           repos=(
-            danthb/intro-computer-vision
+            danthb/intro-computer-vision-danthb
           )
           # Mensaje del Pull Request
           PR_TITLE="Actualizar con los últimos cambios del template"
