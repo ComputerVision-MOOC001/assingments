@@ -9,12 +9,11 @@ jobs:
     environment: test
 
     steps:
-      # 1. Autenticación en GitHub CLI
-      - name: Set up GitHub CLI authentication
+      # 1. Verifica la autenticación de GitHub CLI
+      - name: Verify GitHub CLI authentication
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          gh auth login --with-token
           gh auth status  # Verifica que la autenticación funciona
 
       # 2. Verificar si hay commits nuevos en el repositorio base
