@@ -6,8 +6,11 @@ on:
 jobs:
   update-forks:
     runs-on: ubuntu-latest
+    environment: test
 
     steps:
+      # 1. Verifica la autenticación de GitHub CLI
+      - name: Verify GitHub CLI authentication
       # 1. Configurar Autenticación para GitHub CLI
       - name: Set up GitHub CLI authentication
         env:
@@ -15,19 +18,43 @@ jobs:
         run: |
           gh auth status  # Verifica que la autenticación funciona
 
+      # 2. Verificar si hay commits nuevos en el repositorio base
+      - name: Check for changes in the base repository
       # 2. Crear Pull Request en el Fork del Estudiante
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          BASE_REPO="ComputerVision-MOOC001/assignments"
+          BASE_REPO="ComputerVision-MOOC001/assingments"
           BASE_BRANCH="main"
-          TARGET_REPO="ComputerVision-MOOC001/intro-computer-vision-danthb"
-          TARGET_BRANCH="main"
-      
+          BASE_REPO="ComputerVision-MOOC001/assignments"  # Repositorio base
+          BASE_BRANCH="main"  # Rama del repositorio base
+
+          # Obtener el último commit del repositorio base
+          gh api repos/$BASE_REPO/commits --jq '.[0].sha' > last_commit.txt
+          LAST_COMMIT=$(cat last_commit.txt)
+          echo "Último commit en $BASE_REPO: $LAST_COMMIT"
+
+      # 3. Crear Pull Requests en forks de estudiantes
+      - name: Create pull requests in forks
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          repos=(
+            ComputerVision-MOOC001/intro-computer-vision-danthb
+          )
+          TARGET_REPO="ComputerVision-MOOC001/intro-computer-vision-danthb"  # Fork del estudiante
+          TARGET_BRANCH="main"  # Rama del fork del estudiante
+
           PR_TITLE="Actualizar con los últimos cambios del template"
           PR_BODY="Se han realizado las siguientes actualizaciones:\n- Corrección de errores\n- Nuevas instrucciones para la tarea"
-      
-          echo "Creando Pull Request para $TARGET_REPO"
+
+          for repo in "${repos[@]}"; do
+            echo "Creando Pull Request para $repo desde $BASE_REPO:$BASE_BRANCH"
+            gh pr create --repo "$repo" --head "$BASE_REPO:$BASE_BRANCH" --base "main" \
+              --title "$PR_TITLE" --body "$PR_BODY" || echo "Error creando PR para $repo"
+          done
+          echo "Creando Pull Request para $TARGET_REPO desde $BASE_REPO:$BASE_BRANCH"
           gh pr create --repo "$TARGET_REPO" --head "$BASE_REPO:$BASE_BRANCH" --base "$TARGET_BRANCH" \
-            --title "$PR_TITLE" --body "$PR_BODY"
+            --title "$PR_TITLE" --body "$PR_BODY" || echo "Error creando PR para $TARGET_REPO"
+
