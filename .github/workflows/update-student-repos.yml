@@ -20,15 +20,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          BASE_REPO="ComputerVision-MOOC001/assignments"  # Repositorio base
-          BASE_BRANCH="main"  # Rama del repositorio base
-
-          TARGET_REPO="ComputerVision-MOOC001/intro-computer-vision-danthb"  # Fork del estudiante
-          TARGET_BRANCH="main"  # Rama del fork del estudiante
-
+          BASE_REPO="ComputerVision-MOOC001/assignments"
+          BASE_BRANCH="main"
+          TARGET_REPO="ComputerVision-MOOC001/intro-computer-vision-danthb"
+          TARGET_BRANCH="main"
+      
           PR_TITLE="Actualizar con los últimos cambios del template"
           PR_BODY="Se han realizado las siguientes actualizaciones:\n- Corrección de errores\n- Nuevas instrucciones para la tarea"
-
-          echo "Creando Pull Request para $TARGET_REPO desde $BASE_REPO:$BASE_BRANCH"
+      
+          echo "Creando Pull Request para $TARGET_REPO"
           gh pr create --repo "$TARGET_REPO" --head "$BASE_REPO:$BASE_BRANCH" --base "$TARGET_BRANCH" \
-            --title "$PR_TITLE" --body "$PR_BODY" || echo "Error creando PR para $TARGET_REPO"
+            --title "$PR_TITLE" --body "$PR_BODY"
