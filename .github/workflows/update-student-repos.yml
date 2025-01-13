@@ -21,7 +21,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          BASE_REPO="ComputerVision-MOOC001/assignments"
+          BASE_REPO="ComputerVision-MOOC001/assingments"
           BASE_BRANCH="main"
 
           # Obtener el último commit del repositorio base
